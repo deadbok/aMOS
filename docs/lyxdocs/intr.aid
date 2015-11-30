@@ -1,0 +1,25 @@
+<interface>
+	name="intr"
+	manager="BOSS"
+	mailbox="/dev/intr"
+	description="Low level interrupt control"
+	<provides>
+		BOSS.interrupt.low_level
+	</provides>
+	<depends>
+		BOSS.ipc
+		BOSS.mm
+	</depends>
+	<exports>
+		int		n_intr	# Number of interrupts
+
+		func	int	init(void)
+		func	int_shutdown(void)
+
+		msg		MSG_INT_<unsigned long>
+		msg		MSG_HOOK_INT
+	</exports>
+</interface>
+
+
+

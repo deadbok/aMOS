@@ -1,0 +1,315 @@
+/*		boot.asm
+ *
+ *		Boot sector for aMOS
+ *
+ *	History:
+ *		Version 0.02.10  19 Dec 2000  23:34     ObliVion
+ *		Converted the source to AT&T syntax to eliminate the use
+ *		non GNU software
+ *
+ *		Version 0.02.00  16 Sep 2000  18:22     ObliVion
+ *		The bootsector now uses loader_start & loader_sectors
+ *		to load the aMOS loader.
+ *
+ *		Version 0.01.06  14 Sep 2000  03:34     ObliVion
+ *		Just a few minor rearangements before the big blow (0.02.00)
+ *		Although it is not the optimal solution I have decided that
+ *		I do not believe in pure 8086 compatible code
+ *		So don't use this bootsector on computers from the stoned age
+ *
+ *		Version 0.01.05  5  May 2000  23:14     ObliVion
+ *		Boot sector now accepts parameters and passes them on to the loader.
+ *		Everything else is still lousy
+ *
+ *		Version 0.01.00  27 Feb 2000  23:13     ObliVion
+ *		Initial version.
+ */
+
+/*! \file boot.S
+    \brief I386+ boot sector for aMOS.
+
+    This is the first code called after the BIOS has finished initializing the system.
+	The boot sector transfer the kernel loader to lowmem and execute it.
+*/
+
+	.text
+	.version "0.02.10"
+	.code16
+
+	.=0
+
+/*! \brief Tell the various header files that the are parsed using as not gcc*/
+#define ASM_FILE
+/*! \brief Calculate the absolute address of a memory reference*/
+#define ABS(x) (x-entry+0x7c00)
+
+	.globl			entry
+entry:				cld
+					jmp		start
+
+boot_setup:
+boot_drive:			.byte	0
+bytes_per_sector:	.word	0
+boot_sectors:		.byte	0
+loader_start:		.long	0
+loader_sectors:		.long	0
+kernel_start:		.long	0
+kernel_sectors:		.long	0
+setup_size:			.byte	20
+
+#include <boot/boot.h>
+
+start:					cli
+
+						xorw	%ax, %ax
+						movw	%ax, %ds
+						movw	%ax, %ss
+						movw	$RM_STACK, %sp
+
+						movb	%dl, ABS(boot_drive)
+
+						movw	$ABS(msg_booting), %si
+						call	print
+
+ 	/* reset drive */
+
+						movb	ABS(boot_drive), %dl
+						xorw	%ax, %ax
+						int		$0x13
+
+	/* INT 13 - DISK - GET DRIVE PARAMETERS (PC,XT286,CONV,PS,ESDI,SCSI)
+	 *
+	 *	Input:
+	 * 		AH		08h
+	 *		DL		drive (bit 7 set for hard disk)
+	 *
+	 *	Output:
+	 *		CF 		set on error
+	 *		AH		status
+	 *
+	 *		CF		clear if successful
+	 *		AH		00h
+	 *		AL		00h on at least some BIOSes
+	 *		BL		drive type (AT/PS2 floppies only)
+	 *		CH		low eight bits of maximum cylinder number
+	 *		CL		maximum sector number (bits 5-0)
+	 *				high two bits of maximum cylinder number (bits 7-6)
+	 *		DH		maximum head number
+	 *		DL		number of drives
+	 *		ES:DI	drive parameter table (floppies only)
+	 *
+	 *	Copied from Ralf Brown's Interrupt List
+	 */		
+						movw	$0x08, %ax
+						int		$0x13
+
+						incb	%dh
+						movb	%dh, ABS(heads)+1
+
+						movb	%cl, %al
+						andb	$0x3f, %al
+						movb	%al, ABS(sectors)+1
+
+						xorw	%ax, %ax
+						movb	%cl, %al
+	/*					andb	$0xc0, %al*/
+						shlw	$2, %ax
+						movb	%ch, %al
+						incw	%ax
+						movw	%ax, ABS(cylinders)
+
+						movw	ABS(loader_sectors), %cx	/* Number of sectors to load */
+
+						xorw	%dx, %dx
+						movw	ABS(loader_start), %ax		/* Start sector */
+
+						movw	%dx, %es
+						movw	$LOADER_OFF, %bx
+
+1:						call	readsector
+						addw	ABS(bytes_per_sector), %bx
+
+						addw    $1, %ax
+						adcw    $0, %dx
+
+						movw	$ABS(msg_read), %si
+						call	print
+
+/*						xor		%dx, %dx
+						mov		%dx, %es*/
+
+						decw    %cx												
+						jnz     1b
+						
+
+2:						movw	$ABS(msg_OK), %si
+						call    print
+
+						movw	0x03f2, %dx		/* Stop floppy motor */
+						xorb	%al, %al
+						outb	%al, %dx
+
+						movb	ABS(boot_drive), %dl
+						xorw	%cx, %cx
+						movb	ABS(setup_size), %cl
+						movw	$ABS(boot_setup), %si
+												
+/*		jmp hang*/
+						movl	$LOADER_OFF, %eax
+
+						jmpl	*%eax
+
+read_fail:				movw	$ABS(msg_read_fail), %si
+						call	print
+
+fail:					mov		$ABS(msg_boot_fail), %si
+						call	print
+
+hang:					jmp		hang
+
+
+/* Messages printed during boot */
+msg_booting:		.asciz	"Loading"
+msg_error:			.asciz	"Error\n\r"
+msg_read:			.asciz	"."
+msg_OK:				.asciz	"OK\n\r"
+msg_read_fail:		.asciz	"Error reading disk\n\r"
+msg_boot_fail:		.asciz	"Please reboot!\n\r"
+
+/* Disk geometry data */
+heads:				.word	0
+cylinders:			.word	0
+sectors:			.word	0
+
+/*-----------------------------------------------------------------------------
+ *       print:          print zstring as TTY
+ *
+ *       Call with:      SI = address of the first char
+ *-----------------------------------------------------------------------------
+ */
+print:					pusha
+
+/*	INT 10 -	VIDEO - TELETYPE OUTPUT
+ *				AH = 0Eh
+ *				AL = character to write
+ *				BH = page number
+ *				BL = foreground color (graphics modes only)
+ *		Return:	nothing
+ *		Desc:	display a character on the screen, advancing the cursor and scrolling
+ *				the screen as necessary
+ *		Notes:	characters 07h (BEL), 08h (BS), 0Ah (LF), and 0Dh (CR) are interpreted
+ *				and do the expected things
+ *		IBM PC ROMs dated 4/24/81 and 10/19/81 require that BH be the same as
+ *		the current active page
+ *		BUG:	if the write causes the screen to scroll, BP is destroyed by BIOSes
+ *				for which AH=06h destroys BP
+ */
+
+						movb	$0x0e, %ah
+						xorw	%bx, %bx
+
+1:						lodsb
+						cmpb	$0, %al
+						je      2f
+						int     $0x10
+						jmp     1b
+
+2:						popa
+						ret
+																		
+/*-----------------------------------------------------------------------------
+ *		readsector:		Read one sector to ES:BX
+ *
+ *		Call with:		DX:AX = address of the start sector
+ *						ES:BX = destination buffer
+ *
+ *-----------------------------------------------------------------------------
+ */
+readsector:				pusha
+						push	%dx				
+						push	%ax
+														/* chs_geometry->sector=sector%(disk_geometry.sector)+1;
+														 * chs_geometry->head=sector/disk_geometry.sector;
+														 * chs_geometry->cylinder=chs_geometry->head/disk_geometry.head;
+														 * chs_geometry->head%=disk_geometry.head;
+														 */
+
+						movw 	ABS(sectors), %si
+						divw	%si /*ABS(sectors)*/	/* sector=sector mod sectors */
+						movw	%dx, %cx				/* cx = sector */
+						incw	%cx					 	/* ax = temp */
+		
+						xorw	%dx, %dx
+						movw 	ABS(heads), %si
+						divw	%si				/* cylinder= head div heads */
+														/* ax = cylinder */
+														/* head = temp mod heads */
+														/* dx = head */
+						movb	%dl, %dh           		/* ax = cylinder & dl = head */
+
+						rorb	$2, %ah
+						xchg	%al, %ah           		/* al = [7-6] high cylinder & [5-0] sector */
+														/* ah = cylinder */
+						orw     %ax, %cx
+
+						movb	ABS(boot_drive), %dl
+
+						movw	$0x0201, %ax
+						int   	$0x13
+
+	/* INT 13 - DISK - READ SECTOR(S) INTO MEMORY
+	 *
+	 *	Input:
+	 * 		AH		02h
+	 *		AL		number of sectors to read (must be nonzero)
+	 *		CH		low eight bits of cylinder number
+	 *		CL		sector number 1-63 (bits 0-5)
+	 *				high two bits of cylinder (bits 6-7, hard disk only)
+	 *		DH		head number
+	 *		DL		drive number (bit 7 set for hard disk)
+	 *		ES:BX	data buffer
+	 *	Output:
+	 * 		CF 		set on error
+	 * 	  			if AH = 11h (corrected ECC error), AL = burst length
+	 *
+	 *		CF		clear if successful
+	 *		AH		status
+	 *		AL		number of sectors transferred (only valid if CF set for some
+	 *				BIOSes)								
+	 *
+	 *	Copied from Ralf Brown's Interrupt List
+	 */
+
+					jnc		1f
+
+					movw	$ABS(msg_error), %si
+					call	print
+
+					xorw	%ax, %ax			/* error: reset disk and re-read */
+					int     $0x13				/* may lead to a continuos loop */
+					pop     %ax
+					pop     %dx
+					jmp     readsector
+
+1:					pop     %ax
+					pop     %dx
+					popa
+
+2:					ret
+
+					.= 510
+		  			.byte	0x55
+			  		.byte	0xAA
+
+/*						mov		dh, [ABS(boot_drive)]	; dh = drive
+						xchg	dh, dl					; dl = drive, dh = head
+
+						mov		cx, di
+						mov		ch, ah
+						shl		cx, 6					; ah = high two bits of cylinder
+						mov		cl, bl					
+						xchg	cl, ch					; ch = low eight bits of cylinder number
+														; cl = sector number 1-63 (bits 0-5)
+														;		high two bits of cylinder
+*/
+

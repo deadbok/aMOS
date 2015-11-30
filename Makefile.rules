@@ -1,0 +1,41 @@
+HOST_OS_RULES = $(ROOTDIR)/Makefile.linux
+
+include $(HOST_OS_RULES)
+
+CFLAGS = 
+
+AMOS_INCLUDE = $(ROOTDIR)/src/include
+AMOS_HIK = $(ROOTDIR)/src/hik
+AMOS_HIK_INCLUDE = $(AMOS_HIK)/include
+AMOS_HIK_BOOT_INCLUDE = $(AMOS_HIK)/include/boot
+AMOS_HIK_LIB = $(AMOS_HIK)/lib
+AMOS_TOOLS = $(ROOTDIR)/src/tools
+AMOS_TOOLS_INCLUDE = $(AMOS_TOOLS)/include
+AMOS_TOOLS_LIB = $(AMOS_TOOLS)/lib
+
+VERSION = 0.01.03
+
+%.S : %.GS
+	$(ECHO) "\n\tPreprocessing: \"$@\""
+	$(GASP) -o $@ $<
+
+%.bin : %.o
+	$(ECHO) "\n\tMaking binary file: \"$@\""
+	$(OBJCOPY) $(OBJCOPY_FLAGS) -O $@ $<
+
+%.o : %.S
+	$(ECHO) "\n\tAssembling: \"$@\""
+	$(CC) $(CFLAGS) -Wa,-ahls=$(basename $@).lst $(CC_OUTPUT_FILE) $@ $<
+
+%.o : %.c
+	$(ECHO) "\n\tCompiling: \"$@\""
+	$(CC) $(CFLAGS) -Wa,-ahls=$(basename $@).lst $(CC_OUTPUT_FILE) $@ $<
+
+% : %.c
+	$(ECHO) "\n\tCompiling & linking: \"$@\""
+	$(CC) $(CFLAGS) -Wa,-ahls=$(basename $@).lst $(CC_OUTPUT_FILE) $@ $<
+
+%.d : %.c
+	$(ECHO) "\n\tMaking dependencies: \"$@\""
+	$(CC) $(CC_DEPENDENCY)  $(CC_INCLUDE_FLAG)$(AMOS_INCLUDE) $(CC_OUTPUT_FILE) $@ $< >$(basename $@).d
+

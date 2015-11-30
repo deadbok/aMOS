@@ -1,0 +1,28 @@
+ROOTDIR = ../../..
+include $(ROOTDIR)/Makefile.rules
+
+CFLAGS = $(HOST_OS_CFLAGS) $(CC_CREATE_OBJECT_FLAG) $(CC_INCLUDE_FLAG)$(AMOS_TOOLS_INCLUDE) $(CC_WEAKEN_INCLUDE)
+
+OBJECTS = elf.o
+TARGET = $(AMOS_TOOLS_LIB)/libelf.a
+
+TEST_OBJECTS = test.o
+TEST_LIBS = -lelf
+TEST_TARGET = test
+
+.PHONY: all
+all: $(TARGET) $(TEST_TARGET)
+
+
+$(TEST_TARGET): $(TEST_OBJECTS)
+	$(CC) -o $(TEST_TARGET) $(TEST_OBJECTS) $(TARGET)
+
+$(TARGET): $(OBJECTS)
+	$(AR) $(TARGET) $(OBJECTS)
+	$(RANLIB) $(TARGET)
+
+clean:
+	$(RM) $(TARGET)
+	$(RM) $(TEST_TARGET)
+	$(RM) *.o
+	$(RM) *.lst

@@ -1,0 +1,1622 @@
+#LyX 1.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 218
+\textclass article
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\float_placement !htbp
+\paperfontsize default
+\spacing single 
+\papersize a4paper
+\paperpackage a4
+\use_geometry 1
+\use_amsmath 0
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language swedish
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+
+\layout Title
+
+
+\series bold 
+Brainstorm
+\layout Author
+
+ObliVion
+\layout Subsubsection*
+
+Trademarks
+\layout Standard
+
+Product names used in this publication are for identification purposes only
+ and may be trademarks of their respective companies
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Standard
+\pagebreak_bottom 
+\layout Section
+
+aMOS
+\layout Standard
+
+The goal of aMOS is to be as versatile as possible, meaning that it should
+ adjust itself to the users needs.
+ This goal has a lot of disadvantages compared to a more task-oriented approach.
+ One of them, that there is a lot of end-user decisions when installing
+ the OS.
+ There are some examples of very complex OSes on the marked, that hide a
+ lot of details from the user behind a pretty GUI.
+ The simple idea behind aMOS is that the user knows best, therefore nothing
+ will be hidden unless the user specifies it.
+ 
+\layout Standard
+
+This means that aMOS will have to 
+\begin_inset Quotes sld
+\end_inset 
+
+grade
+\begin_inset Quotes srd
+\end_inset 
+
+ the user when installing itself, and ultimately learn what level the user
+ is on, by watching the user in action.
+ The goal of monitoring the user, and adapting to his needs, is as I see
+ it a very complex task involving some kind of intelligence in aMOS.
+ This intelligence could then extend to handling and recovering from crashes,
+ and best of all see to it that they never happen again.
+\layout Standard
+
+Another feature that helps recovering from a crash, that every object in
+ aMOS is required to save the last functioning state, and figure out what
+ went wrong between then and the crash, and then gracefully recover.
+\layout Standard
+
+Both of these features may require a lot of processing power, for monitoring,
+ and a lot of space for saving the safe states of the objects of aMOS.
+\layout Subsection
+
+The general design
+\layout Standard
+
+The idea is to make aMOS as object oriented as possible, even though in
+ this early stage everything is coded in ANSI C.
+ The reason for choosing ANSI C is that the C library is easier to implement,
+ and at this stage where no binary object format has been defined, and no
+ compilers ported, there are some difficulties with RTTI
+\begin_float footnote 
+\layout Standard
+
+Run-Time Type Information
+\end_float 
+.
+ 
+\series bold 
+Just keep in mind that the code is destined to a complete rewrite in C++,
+ and therefore keep things as object oriented as possible.
+\layout Standard
+
+There are some properties that every object in the system need to implement
+ to be accepted as a liable system component:
+\layout Itemize
+
+At least one mailbox
+\layout Itemize
+
+The ability to tell other objects about its capabilities through this mailbox
+\layout Itemize
+
+Rules regarding what system components it may access
+\layout Itemize
+
+Denial of unauthorized request
+\layout Section
+
+
+\emph on 
+The BOSS
+\begin_float footnote 
+\layout Standard
+
+Basic Operating System Services
+\end_float 
+
+\emph on 
+ kernel
+\layout Subsection
+
+The design
+\layout Standard
+
+The BOSS kernel is a system dependent micro kernel, that export a default
+ functionality no matter the features of the underlying hardware.
+ It is the lowest level of abstraction from the hardware of the target system,
+ and the base of aMOS.
+ The level of functionality that the BOSS kernel provides, is enough for
+ running a usable shell thereby creating a very simple OS, but the intended
+ use of the BOSS kernel, is as the base component in an operating system,
+ that extend the services provided by the BOSS kernel.
+\layout Standard
+
+The goal of the BOSS kernel is to export the features found on the target
+ machine, without breaking the limits of the BOSS specifications, thereby
+ creating the base for an architecture independent OS.
+ This is accomplished by allowing the basic framework of the BOSS kernel
+ to be extended by adding modules to the fundamental classes of services.
+ These modules are registered as subcomponents of the service class.
+ For instance on the Intel x86 platform the memory manager will have a subcompon
+ent for managing virtual memory, since the processor support these extensions.
+\layout Standard
+
+The BOSS kernel export all of its services through an IPC
+\begin_float footnote 
+\layout Standard
+
+Inter-Process Communication
+\end_float 
+ system that uses mailboxes.
+ By using the IPC system as the only means of requesting services from the
+ BOSS kernel protection of the internals of BOSS are greatly simplified,
+ due to the fact that the BOSS components has complete control when it comes
+ to granting to access its services.
+ 
+\layout Standard
+
+\begin_float fig 
+\layout Standard
+\align center 
+
+\begin_inset Figure size 243 176
+file BOSS_design.eps
+flags 9
+
+\end_inset 
+
+
+\layout Caption
+
+
+\begin_inset LatexCommand \label{fig:BOSSdes}
+
+\end_inset 
+
+The BOSS kernel design
+\end_float 
+\layout Standard
+
+Looking at figure 
+\begin_inset LatexCommand \ref{fig:BOSSdes}
+
+\end_inset 
+
+ you will see that the idea behind the BOSS kernel is the same as the HAL
+\begin_float footnote 
+\layout Standard
+
+Hardware Abstraction Layer
+\end_float 
+ in Windows NT, except for the fact that HAL told Dave, that his mind was
+ going.
+ Abstracting the hardware from the rest of the OS is a very good design
+ decision, the problem with HAL, from my point of view, was that the drastic
+ limitations on hardware access slowed certain task.
+ I am thinking about the multimedia related features of the OS, but the
+ point of Windows NT, I think, has never been to provide blazing speed for
+ multimedia applications.
+ The goal of Windows NT was to create a stable fault tolerant OS suitable
+ for companies in need of a good OS with a nice user interface.
+\layout Standard
+
+Relying on an IPC system 
+\layout Subsubsection
+
+Hardware interface
+\layout Standard
+
+The BOSS has direct access to all parts of the hardware on the target machine,
+ but may only utilize this hardware for the sake of providing the default
+ functionality.
+ The BOSS kernel provide the module mechanism to extend the basic functionality,
+ and take advantage of special hardware capabilities
+\series bold 
+.
+ The BOSS kernel should be designed to run on the target architecture with
+ no modules loaded, so that the basic services may be provided, in case
+ of system failure.
+
+\series default 
+ The BOSS may implement features that are beyond standard functionality
+ if needed.
+ For instance the Intel x86 version will have a virtual memory system as
+ default because it makes loading of modules easier.
+ These extended capabilities will still have the look of an extension module
+ to the layers running on top of the BOSS kernel.
+\layout Standard
+
+If there are no modules loaded, the BOSS kernel will use its own standard
+ implementation to gain access to the hardware features of the system.
+ Modules provide optimizations for the rest of the system, modules are loaded
+ to provide better utilization of the features of for instance the CPU,
+ of the system.
+ 
+\layout Standard
+\added_space_top 0.3cm \align center 
+\begin_float fig 
+\layout Standard
+\align center 
+
+\begin_inset Figure size 431 247
+file BOSS_hi.eps
+flags 9
+
+\end_inset 
+
+
+\layout Caption
+
+The BOSS kernel hardware interface
+\end_float 
+\layout Subsubsection
+
+BOSS interface
+\layout Standard
+
+The BOSS kernel uses an Interprocess Communication (IPC) system to export
+ a default functionality.
+ Every service provided by the BOSS kernel has a mailbox, through which
+ communication takes place.
+ Basically this is what BOSS exports:
+\layout Itemize
+
+A 
+\emph on 
+send
+\emph default 
+ function for sending a message to a specific mailbox
+\layout Itemize
+
+A 
+\emph on 
+get_mb_desc
+\emph default 
+ to acquire a handle for a mailbox
+\layout Subsection
+
+The BOSS kernel functionality
+\layout Standard
+
+The BOSS kernel has a well defined default functionality.
+ 
+\series bold 
+It is required that the target system is able to provide a hardware base,
+ that makes it possible for the BOSS kernel to export this default functionality
+\series default 
+,
+\series bold 
+ 
+\series default 
+either trough direct use of the hardware, or through emulation of the missing
+ components on top of the hardware present.
+ The default functionality consist of the following components:
+\layout Itemize
+
+A console
+\layout Itemize
+
+Memory management
+\layout Itemize
+
+Scheduling and multitasking
+\layout Itemize
+
+Protection
+\layout Itemize
+
+IPC
+\layout Itemize
+
+Interrupt control
+\layout Itemize
+
+Character device control
+\layout Itemize
+
+Block device control
+\layout Standard
+
+Services from the BOSS kernel are called upon, by sending a query message
+ to the mailbox of the service.
+ This makes the IPC the heart of the BOSS kernel, and isolates the location
+ of the BOSS kernel from the caller, enforcing some level of protection
+ from malicious software.
+ All of the exported services can have extension, provided by special mailboxes.
+ The exact capabilities of these extensions can be investigated using the
+ root service's mailbox.
+\begin_float fig 
+\layout Standard
+\align center 
+
+\begin_inset Figure size 307 239
+file ext_examp.eps
+flags 9
+
+\end_inset 
+
+
+\layout Caption
+
+Example of service extensions
+\end_float 
+\layout Subsubsection
+
+The console
+\layout Standard
+
+The console should be thought of as a special kind of the character devices
+ mentioned later.
+ It is the device that has been used to display status messages since the
+ BOSS kernel was initialized.
+ This device is guaranteed to stay put until the BOSS has shutdown its services.
+ On a PC system this is usually some kind of video adapter, but this can
+ be any kind of device, that is able to print characters; It could be a
+ text file on disk.
+ 
+\series bold 
+The BOSS kernel implementation can choose to provide only a dummy driver
+ for the console
+\series default 
+,
+\series bold 
+ 
+\series default 
+so that the messages to this output are send into oblivion.
+\layout Subsubsection
+
+Memory management
+\layout Standard
+
+The BOSS kernel export the following functions for memory management:
+\layout Itemize
+
+Get total system memory
+\layout Itemize
+
+Get map of allocated areas and their use
+\layout Itemize
+
+Allocate a block of memory
+\layout Itemize
+
+Deallocate a block of memory
+\layout Itemize
+
+Rules for handling allocation of special memory blocks like DMA and such
+\layout Standard
+
+The memory management facilities of the BOSS kernel is for basic allocation
+ only.
+ It is designed to allocate large blocks of memory.
+ and is not very fast, so lots of allocation/deallocation cycles is simply
+ a waste of time.
+ The idea is to extend this memory manager by allocating a block of memory,
+ and letting a more specific memory allocator manage that specific block.
+ This means thatSpecial blocks like DMA-buffer and the like, are handled
+ by this allocator.
+\layout Standard
+
+\begin_float fig 
+\layout Standard
+\align center 
+
+\begin_inset Figure size 451 115
+file mm_aloc_example.eps
+flags 9
+
+\end_inset 
+
+
+\end_float 
+\layout Subsubsection
+
+Scheduling and multitasking
+\layout Standard
+
+The BOSS kernel export the following functions for scheduling and multitasking:
+\layout Itemize
+
+Create / destroy a task
+\layout Itemize
+
+Sleeping tasks
+\layout Itemize
+
+
+\series bold 
+
+\begin_inset Info
+Find out, FIFO round robyn...
+\end_inset 
+
+Scheduling policy yet unknown
+\layout Subsubsection
+
+Protection
+\layout Subsubsection
+
+IPC
+\layout Section
+
+Modules
+\layout Standard
+
+A module is an entity in the system dedicated to a certain task, this may
+ be a process scheduler, a disk driver, etc.
+ The module format, specifies a subset of the aMOS object format
+\begin_inset Info
+Haven't been worked out yet
+\end_inset 
+
+ specifically used from the BOSS kernel and up wards.
+ 
+\layout Subsection
+
+Modules at system level
+\layout Standard
+
+Any piece of code is split in to sections, when compiled and linked into
+ an object file.
+ These sections can be both code, data, uninitialized data, and other kinds
+ of data that the linker needs.
+ The module manager must load these sections into system memory and then
+ execute the initialization routine from the module.
+ The binary layout of modules are described in 
+\begin_inset LatexCommand \ref{Module file format}
+
+\end_inset 
+
+
+\layout Subsubsection
+
+Relocation
+\layout Standard
+
+When the modules are compiled and linked into an object file, the linker
+ has no idea at what address the final code is to be loaded, since the job
+ of placing the code in memory, is that of the module manager.
+ Therefore every address reference in the module needs to be recalculated,
+ and the right addresses merged in to the image in memory.
+\layout Subsection
+
+The module manager
+\layout Standard
+
+The module manager provides the following functions:
+\layout Itemize
+
+Loading and parsing of modules
+\layout Itemize
+
+Creating new interfaces
+\layout Itemize
+
+Copying the sections of modules to the right memory location
+\layout Itemize
+
+Dependency checking and loading of needed modules
+\layout Itemize
+
+Initializing modules
+\layout Itemize
+
+Destroying interfaces
+\layout Itemize
+
+Unloading modules
+\layout Subsubsection
+
+Loading modules
+\layout Standard
+
+This stage actually parses the information in the module file, rather than
+ just loading it.
+ The module manager first needs to find out what sections are present, and
+ allocate memory for them.
+ Then 
+\layout Standard
+\added_space_top 0.3cm \added_space_bottom 0.3cm \align center 
+\begin_float fig 
+\layout Standard
+\align center 
+
+\begin_inset Figure size 87 172
+file module_basic.eps
+flags 9
+
+\end_inset 
+
+
+\layout Caption
+
+Structure of a module
+\end_float 
+\layout Subsection
+
+
+\begin_inset LatexCommand \label{Module file format}
+
+\end_inset 
+
+Module file format
+\layout Subsubsection
+
+The module header
+\layout Standard
+
+The module header contain initial information needed by the BOSS kernel
+ to load and initialize its services.
+\layout Itemize
+
+
+\emph on 
+magic number
+\emph default 
+ is a special number starting at the very first byte in the file, telling
+ that this really is a module
+\layout Itemize
+
+
+\emph on 
+version
+\emph default 
+ the version of the aMOS module format.
+ 
+\layout Itemize
+
+
+\emph on 
+header size
+\emph default 
+ is the size of the header data structure at the start of the module
+\layout Itemize
+
+
+\emph on 
+validation ID
+\emph default 
+ is and MD5
+\begin_inset LatexCommand \cite{MD5}
+
+\end_inset 
+
+ key generated from the code sections in the file, and is used to check
+ if the module has been tampered with.
+\layout Itemize
+
+
+\emph on 
+architecture
+\emph default 
+ tells on what architecture the module is use able.
+\layout Itemize
+
+
+\emph on 
+32/64 bit module
+\emph default 
+ is used to tell whether this module is for 32 or 64 bit architectures
+\layout Itemize
+
+
+\emph on 
+section table offset
+\emph default 
+ the offset, from the beginning of the file, where the section table is
+ located
+\layout Itemize
+
+
+\emph on 
+section table entries
+\emph default 
+ the number of sections there are in the section table
+\layout Itemize
+
+
+\emph on 
+section table entry size 
+\emph default 
+the size, in bytes, of one entry in the section table
+\layout Standard
+
+The structure looks like this in C:
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+
+\layout Standard
+
+
+\family typewriter 
+struct module_header
+\layout Standard
+
+
+\family typewriter 
+{
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+char\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mh_magic[10];
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+unsigned short\SpecialChar ~
+\SpecialChar ~
+mh_version[4];
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+unsigned long\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mh_size;
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+unsigned long\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mh_id[2];
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+unsigned long\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mh_st_offset;
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+unsigned long\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mh_st_entries;
+\layout Standard
+
+
+\family typewriter 
+}
+\layout Paragraph
+
+mh_magic
+\layout Standard
+
+The magic number is found at position 0 and it is used to identify the file
+ as a valid aMOS module.
+ The magic number consist of the string 
+\begin_inset Quotes sld
+\end_inset 
+
+
+\family typewriter 
+aMOSmodule
+\family default 
+
+\begin_inset Quotes srd
+\end_inset 
+
+ in 8-bit ASCII format which gives this byte sequence:
+\layout Standard
+\added_space_top bigskip \added_space_bottom bigskip 
+
+\begin_inset  Tabular
+<lyxtabular version="2" rows="2" columns="11">
+<features rotate="false" islongtable="false" endhead="0" endfirsthead="0" endfoot="0" endlastfoot="0">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="" special="">
+<row topline="true" bottomline="true" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+ASCII
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+a
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+M
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+O
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+S
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+m
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+o
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+d
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+u
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+l
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+e
+\end_inset 
+</cell>
+</row>
+<row topline="true" bottomline="true" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+Hex
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x61
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x4d
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x4f
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x53
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x6d
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x6f
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x64
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x75
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x6c
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0x65
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+
+\layout Standard
+\added_space_bottom bigskip 
+These values are defined and has the following names:
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC0\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x61
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC1\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x4d
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC2\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x4f
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC3\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x53
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC4\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x6d
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC5\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x6f
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC6\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x64
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC7\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x75
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC8\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x6c
+\layout Standard
+
+
+\family typewriter 
+AMOD_MH_MAGIC9\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+0x65
+\layout Paragraph
+
+mh_version
+\layout Standard
+
+The module format version number is stored as four words, each separated
+ by a punctuation-mark.
+ E.g.
+ if the array has these values 
+\begin_inset  Tabular
+<lyxtabular version="2" rows="1" columns="4">
+<features rotate="false" islongtable="false" endhead="0" endfirsthead="0" endfoot="0" endlastfoot="0">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="false" width="" special="">
+<column alignment="center" valignment="top" leftline="true" rightline="true" width="" special="">
+<row topline="true" bottomline="true" newpage="false">
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+1
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="false" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+0
+\end_inset 
+</cell>
+<cell multicolumn="0" alignment="center" valignment="top" topline="true" bottomline="false" leftline="true" rightline="true" rotate="false" usebox="none" width="" special="">
+\begin_inset Text
+
+\layout Standard
+
+2
+\end_inset 
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset 
+
+, the version is 0.1.0.2.
+\layout Paragraph
+
+mh_size
+\layout Standard
+
+This entry simply tells the size of the header.
+ This is used in accordance with mh_version to provide backward compatibility.
+\layout Paragraph
+
+mh_id
+\layout Standard
+
+This is a 64 bit key generated by applying the MD5
+\begin_inset LatexCommand \cite{MD5}
+
+\end_inset 
+
+ algorithm to all the code sections in the module file.
+ The code sections are processed in the the same order as they are mentioned
+ in the section table.
+ This value is used to check if the code of the module is still intact.
+\layout Paragraph
+
+mh_arch
+\layout Standard
+
+This is a ID telling for which system (machine type) the module was compiled.
+\layout Paragraph
+
+mh_bit
+\layout Standard
+
+This is a byte value of either 32 or 64 telling if the module is targeted
+ at a 32 or 64 bit architectures.
+\layout Paragraph
+
+mh_st_offset
+\layout Standard
+
+The byte offset from the start of the file, where the section table is to
+ be found.
+ The section table is described in detail in 
+\begin_inset LatexCommand \ref{Section table}
+
+\end_inset 
+
+.
+\layout Paragraph
+
+mh_st_entries
+\layout Standard
+
+The number of sections in the section table.
+\layout Paragraph
+
+mh_st_entsize
+\layout Standard
+
+The size, in bytes, of a single entry in the section table.
+\layout Subsubsection
+
+
+\begin_inset LatexCommand \label{Section table}
+
+\end_inset 
+
+Section table
+\layout Standard
+
+The section table has one entry per section in the file.
+ A section is a block containing raw binary data from the object file.
+ There may be sections in the module, that are both software and hardware
+ specific.
+ The section can be identified using the section header located at position
+ 0 in the section, more on the format of section headers in 
+\begin_inset LatexCommand \ref{Section header}
+
+\end_inset 
+
+.
+ The position of the section is found in the section table.
+\layout Subsubsection
+
+
+\begin_inset LatexCommand \label{Section header}
+
+\end_inset 
+
+Section header
+\layout Subsection
+
+aMOS Interface Definition files
+\layout Standard
+
+
+\family typewriter 
+<interface>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+name="intr"
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+manager="BOSS"
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+mailbox="/dev/intr"
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+description="Low level interrupt control"
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+<provides>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+BOSS.interrupt.low_level
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+</provides>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+<depends>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+BOSS.ipc
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+BOSS.mm
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+</depends>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+<exports>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+int\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+n_intr\SpecialChar ~
+\SpecialChar ~
+# Number of interrupts
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+func\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+int\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+init(void)
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+func\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+int_shutdown(void)
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+msg\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+MSG_INT_<unsigned long>
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+msg\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+MSG_HOOK_INT
+\layout Standard
+
+
+\family typewriter 
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+\SpecialChar ~
+</exports>
+\layout Standard
+
+
+\family typewriter 
+</interface>
+\layout Section
+
+Implementation example (I386)
+\layout Bibliography
+\bibitem [MD5]{MD5}
+
+Request for Comments 1231
+\the_end

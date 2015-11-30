@@ -1,0 +1,36 @@
+00000000000i[MEM0 ] 64.00MB
+00000000000i[MEM0 ] rom at 0xf0000/65536 ('/usr/bochs/latest/BIOS-bochs-latest')
+00000000000i[MEM0 ] rom at 0xc0000/32769 ('/usr/bochs/latest/VGABIOS-elpin-2.40')
+00000000000i[APIC?] local apic in  initializing
+00000000000i[CMOS ] Setting initial clock to: Thu Mar 14 18:31:12 2002
+00000000000i[FDD  ] tried to open ../1.44a read/write: No such file or directory
+00000000000i[FDD  ] tried to open ../1.44a read only: No such file or directory
+00000000000i[FDD  ] fd0: '../1.44a' ro=1, h=0,t=0,spt=0
+00000000000i[XGUI ] font 8 wide x 16 high, display depth = 16
+00000000000i[VGA  ] interval=300000
+00000000000i[XGUI ] [x] Mouse off
+00000003620i[BIOS ]  rombios.c,v 1.36 2002/03/09 01:50:52 cbothamy Exp $
+00000136989i[VGA  ] char map select: #1=0 / #2=0 (unused)
+00000286656e[HD   ] device set to 0 which does not exist
+00000288216e[HD   ] device set to 1 which does not exist
+00000289776e[HD   ] device set to 0 which does not exist
+00000292219e[HD   ] device set to 1 which does not exist
+00000293179e[HD   ] device set to 0 which does not exist
+00000294216e[HD   ] device set to 1 which does not exist
+00000294815e[HD   ] device set to 0 which does not exist
+00000295419e[HD   ] device set to 0 which does not exist
+00000296619e[HD   ] device set to 1 which does not exist
+00000297838e[HD   ] device set to 1 which does not exist
+00000298440e[HD   ] device set to 0 which does not exist
+00000300915e[HD   ] device set to 1 which does not exist
+00000301875e[HD   ] device set to 0 which does not exist
+00000302912e[HD   ] device set to 1 which does not exist
+00000303511e[HD   ] device set to 0 which does not exist
+00000306138e[HD   ] device set to 1 which does not exist
+00000307098e[HD   ] device set to 0 which does not exist
+00000308135e[HD   ] device set to 1 which does not exist
+00000308734e[HD   ] device set to 0 which does not exist
+00000316223i[BIOS ] Boot from Hard Disk 0 failed
+00000323791i[BIOS ] FATAL: Could not read the boot disk
+00018400500i[XGUI ] copied text snapshot to snapshot.txt
+00019405800i[XGUI ] copied text snapshot to snapshot.txt

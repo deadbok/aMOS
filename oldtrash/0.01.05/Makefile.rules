@@ -1,0 +1,66 @@
+CC = gcc
+CPU = i386
+CFLAGS = -O0 -ansi -mcpu=$(CPU) -Wall -Wmissing-prototypes -Wunused -Winline -finline-functions -c -D_KERNEL_ -I$(ROOTDIR)/include
+PLATFORM_CFLAGS = -O3 -Wall -I$(ROOTDIR)/include/boot
+LD = ld
+OBJCOPY= objcopy -O binary -R .note -R .comment -S
+AR = ar -r
+RANLIB = ranlib
+NASM = nasm
+VERSION = 0.01.05
+
+.S.o:
+		$(CC) $(CFLAGS) -Wa,-ahls=$@.lst -nostdlib -fno-builtin -nostdinc -o $@ $<
+
+.c.o:
+		$(CC) $(CFLAGS) -Wa,-ahls=$@.lst -nostdlib -fno-builtin -nostdinc -o $@ $<
+
+.asm.o:
+		$(NASM) -l $@.lst -o $@ $<
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

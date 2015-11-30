@@ -1,0 +1,1 @@
+der skal være et make afsnit i mit operativsystem der hedder love, så man kan skrive "make love"

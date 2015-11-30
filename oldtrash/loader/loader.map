@@ -1,0 +1,269 @@
+
+Allocating common symbols
+Common symbol       size              file
+
+disk_geometry       0xc               main.o
+run_kernel          0x4               main.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .text set to 0x9000
+LOAD stub.o
+LOAD main.o
+                0x08048074                .=(0x8048000+SIZEOF_HEADERS)
+
+.interp
+ *(.interp)
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.init
+ *(.init)
+
+.plt
+ *(.plt)
+
+.text           0x00009000      0xa45
+ *(.text)
+ .text          0x00009000      0x35a stub.o
+                0x00009254                disk_reset
+                0x00009236                putch
+                0x00009000                _start
+                0x00009003                loader_setup
+                0x00009320                jump_to_kernel
+                0x00009278                disk_info_standard
+                0x000092d3                disk_read_standard
+ *fill*         0x0000935a        0x6 37008
+ .text          0x00009360      0x6e5 main.o
+                0x00009360                printstr
+                0x000096ec                read_kernel
+                0x000093b4                putl
+                0x00009658                LBA_to_CHS
+                0x000095b0                print_error
+                0x00009934                main
+                0x00009828                dump_mem
+ *(.stub)
+ *(.gnu.warning)
+ *(.gnu.linkonce.t*)
+                0x00009a45                _etext=.
+                0x00009a45                PROVIDE (etext, .)
+
+.fini
+ *(.fini)
+
+.rodata         0x00009a60      0x43f
+ *(.rodata)
+ .rodata        0x00009a60      0x43f main.o
+ *(.gnu.linkonce.r*)
+
+.rodata1
+ *(.rodata1)
+                0x00009e9f                .=.
+
+.data           0x00009ea0      0x129
+ *(.data)
+ .data          0x00009ea0      0x129 main.o
+ *(.gnu.linkonce.d*)
+
+.data1
+ *(.data1)
+
+.ctors
+ *(.ctors)
+
+.dtors
+ *(.dtors)
+
+.got
+ *(.got.plt)
+ *(.got)
+
+.dynamic
+ *(.dynamic)
+
+.sdata
+ *(.sdata)
+                0x00009fc9                _edata=.
+                0x00009fc9                PROVIDE (edata, .)
+                0x00009fc9                __bss_start=.
+
+.sbss
+ *(.sbss)
+ *(.scommon)
+
+.bss            0x00009fcc       0x10
+ *(.dynbss)
+ *(.bss)
+ *(COMMON)
+ COMMON         0x00009fcc       0x10 main.o
+                                  0x0 (size before relaxing)
+                0x00009fcc                disk_geometry
+                0x00009fd8                run_kernel
+                0x00009fdc                .=ALIGN(0x4)
+                0x00009fdc                _end=.
+                0x00009fdc                PROVIDE (end, .)
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x00000000       0x3d
+ *(.comment)
+ .comment       0x00000000       0x3d main.o
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+OUTPUT(loader.o elf32-i386)
+
+.note           0x0000003d       0x28
+ .note          0x0000003d       0x14 stub.o
+ .note          0x00000051       0x14 main.o

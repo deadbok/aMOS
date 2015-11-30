@@ -1,0 +1,3 @@
+
+init_idt"542 N $"{ENEAibi21;igmemset28(2>ididt2?,32CM,35iiMAX_INTS37*3?CL);AG(4:ibi4;=4<CM;ibi50<51iiMAX_INTS52;ibi5<CD5=)ipSET_DEFAULT_INT63(72ibi73,74ipKERNEL_CODE_SEL76,85ijD_PRESENT87+90ifD_INT91+96igD_DPL397);igidtptr:2.iflimit:9=:>(:?iiMAX_INTS;0*;8CL)-;;CL;igidtptr<0.ihaddress<7=<>ididt<?;}=4
+set_int"762 N $index"offset"selector"flags"{DB(68ifindex69<6>ipNON_TSS_ENTRIES6?){ididt85[88ifindex89]=8?(90igoffset91&98CL);ididt:5[:8ifindex:9]BI:?(;1(;2iiselector;3&;<CL)BP<6CL);ididt=0[=3ifindex=4]BI=:(=<(==ENEAEA)(?1igoffset?2CA?9CL)&A@@CL)BPA@JCL;ididtAAC[AAFifindexAAG]BIAAM(AAO(AB@ENEAEA)ifflagsACDBPACJCL);}ADC}ADE

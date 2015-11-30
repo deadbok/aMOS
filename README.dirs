@@ -1,0 +1,36 @@
+This docoment describes the layout of aMOS build tree
+
+History:
+
+	Version 0.01.01	21 May 2001	18:39		ObliVion
+	Initial version.
+
+
+/
+	bin/										This is where the final binaries are copied
+	
+	docs/										This is where the vast amounts of documentation lay hidden
+			*/									Should be comprehendable
+
+	lib/										Says it all the compiled libraries
+	
+	linux/									An attempt to make the microkernel run as a linux binary
+			*/									The same as for the "src" dir
+
+	oldtrash/								Well you know...
+			*/									Just trash
+
+	src/										The source code for aMOS
+			arch/         			This directory contains all the architecure dependant code
+					i386/						For the i386+ platform
+							boot/	    	The bootsector
+									tools/  Tools for combining the boot sector, loader, and micro kernel into a binary image
+							kernel/			Kernel files
+							loader/			The Loader
+			include/						Include files for the kernel (mostly)
+							i386/				Architecure dependant include files
+							
+
+	test/										Directory used to test my ideas
+	
+

@@ -1,0 +1,85 @@
+.PHONY: all
+all:
+
+ECHO = @echo -e -n
+
+#Host os name
+HOST_OS = linux
+
+#File copy command
+CP_FLAGS = -f
+CP = $(ECHO) "\n\tCopying file: \"$@\""; cp
+
+RM_FLAGS = -f
+RM = $(ECHO) "."; rm $(RM_FLAGS)
+
+#GNU C/C++ Compiler
+CC = gcc
+CCPP = c++
+CC_INCLUDE_FLAG = -I
+CC_CREATE_OBJECT_FLAG = -c
+CC_NO_STDINC = -nostdinc
+CC_NO_STDLIB = -nostdlib
+CC_ANSI = -ansi
+CC_ALL_WARN = -Wall
+CC_NO_BUILTIN_FUNC = -fno-builtin
+CC_WEAKEN_INCLUDE = -I-
+CC_VERBOSE = -v
+CC_DEPENDENCY = -M
+CC_OUTPUT_FILE = -o
+CC_LINK_LIBRARY = -l
+CC_LIBRARY_DIR = -LDIR
+CC_DEBUG = -g
+
+#Make
+MAKE_FLAGS = -s
+MAKE = $(ECHO) "\n\n --> Making: \"$@\""; make $(MAKE_FLAGS)
+
+#Doxygen
+DOXYGEN = $(ECHO) "\n    Making Doxygen source documentation"; doxygen
+DOXYGEN_FLAGS =
+
+LD = $(ECHO) "\n\tLinking: \"$@\""; ld
+LD_STRIP = -s
+
+AR_FLAGS = -rc
+AR = $(ECHO) "\n\tArchiving: \"$@\""; ar $(AR_FLAGS)
+
+GASP = gasp
+
+OBJCOPY_FLAGS = -O binary -R .note -R .comment -S
+OBJCOPY = $(ECHO) "\n\tMaking binary file: \"$@\""; objcopy $(OBJCOPY_FLAGS)
+
+RANLIB = $(ECHO) "\n\tCreating library index for: \"$@\""; ranlib
+
+ARCHITECTURE = i386
+CPU = i586
+
+AMOS_CFLAGS = -O0 -mcpu=$(CPU) -Wall -Wmissing-prototypes -Winline -fno-builtin -finline-functions $(CC_CREATE_OBJECT_FLAG)
+AMOS_CFLAGS += -mcpu=$(CPU)
+AMOS_CFLAGS += $(KERNEL_CFLAGS)
+AMOS_CFLAGS += $(CC_NO_STDLIB)
+AMOS_CFLAGS += $(CC_NO_STDINC)
+#AMOS_CFLAGS += $(CC_ANSI)
+AMOS_CFLAGS += $(CC_ALL_WARN)
+AMOS_CFLAGS += $(CC_NO_BUILTIN_FUNC)
+
+AMOS_KERNEL_CFLAGS =  $(AMOS_CFLAGS) -D_KERNEL_
+
+HOST_OS_CFLAGS = -O2
+HOST_OS_CFLAGS += $(CC_ALL_WARN)
+HOST_OS_CFLAGS += $(CC_ANSI)
+
+/*PHONY:	version.h*/
+version.h :
+	@echo \#ifndef _KERNEL_VERSION_H_ > $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define _KERNEL_VERSION_H_ >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define STRING_VERSION \"$(VERSION)\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define BUILD_ARCH \"$(CPU)\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define COMPILE_DATE \"`date +%m/%d/%Y`\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define COMPILE_TIME \"`date +%T`\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define COMPILE_BY \"`whoami`\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define COMPILE_HOST \"`hostname`\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#define COMPILER \"`$(CC) $(CFLAGS) -v 2>&1 | tail -1`\" >> $(ROOTDIR)/src/include/hik/version.h
+	@echo \#endif >> $(ROOTDIR)/src/include/hik/version.h
+	@echo -e -s \n\tversion.h updated

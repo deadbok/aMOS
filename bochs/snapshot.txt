@@ -1,0 +1,25 @@
+VGA BIOS - Version 2.40                                                         
+Copyright (C) 1990-2000 Elpin Systems, Inc.                                     
+All rights reserved.                                                            
+                                                                                
+Licensed for use with bochs, courtesy of MandrakeSoft.                          
+                                                                                
+For information on this or other VGA development products, contact              
+Elpin Systems at: (800) 723-9038 or www.elpin.com                               
+                                                                                
+Bochs BIOS, $Revision: 1.36 $ $Date: 2002/03/09 01:50:52 $                      
+                                                                                
+                                                                                
+Boot from Hard Disk 0 failed                                                    
+FATAL: Could not read the boot disk                                             
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                

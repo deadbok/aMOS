@@ -1,0 +1,15 @@
+[IconPosition::CVS]
+X=28
+Y=5
+
+[IconPosition::Makefile.rules]
+X=270
+Y=5
+
+[IconPosition::hik]
+X=115
+Y=5
+
+[IconPosition::makefile]
+X=195
+Y=5

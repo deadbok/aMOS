@@ -1,0 +1,12 @@
+a:active { color: #ff0000; background-color: transparent }
+a:link { color: #0000ff; background-color: transparent }
+a:visited { color: #800080; background-color: transparent }
+body { color: black; background-color: white }
+h1 { color: #c33; font-weight: bold; background-color: transparent; text-align: center }
+h2 { color: #00008b; font-weight: bold; background-color: transparent }
+h3 { color: #006400; font-weight: bold; background-color: transparent; margin-right: 4%; margin-left: 4% }
+h4 { font-weight: bold; margin-right: 6%; margin-left: 6% }
+h5 { font-weight: bold; margin-right: 6%; margin-left: 6% }
+p { margin-right: 6%; margin-left: 6% }
+pre { margin-left: 10%; margin-right: 10% }
+table { margin-left: 6% }

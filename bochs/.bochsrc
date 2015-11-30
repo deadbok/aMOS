@@ -1,0 +1,30 @@
+megs: 64
+#megs: 32
+
+boot: c
+
+vgaromimage: /usr/bochs/latest/VGABIOS-elpin-2.40
+
+panic: action=fatal
+error: action=report
+info: action=report
+debug: action=ignore
+
+floppya: 1_44=../1.44a, status=inserted
+
+romimage: file=/usr/bochs/latest/BIOS-bochs-latest, address=0xf0000
+
+log: ./bochs.out
+keyboard_serial_delay: 200
+floppy_command_delay: 500
+
+vga_update_interval: 300000
+
+#ips:	100000
+ips:	900000
+
+
+mouse: enabled=0
+private_colormap: enabled=0
+i440fxsupport: enabled=0
+newharddrivesupport: enabled=1

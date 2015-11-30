@@ -1,0 +1,7 @@
+Version		0.01.03		16 Jul	2001:
+	-	Message system running (no really)
+Version		0.01.02		?? ???	2000:
+	-	Broke one of my design principles and added memory management to the kernel
+Version		0.01.01		08 Oct 	2000:
+	- 	Interrupt system running
+	- 	Message system running

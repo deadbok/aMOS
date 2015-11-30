@@ -1,0 +1,2 @@
+00000000000i[MEM0 ] 4.00MB
+00000000000i[MEM0 ] ROM: couldn't open ROM image file ''.

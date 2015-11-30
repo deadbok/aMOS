@@ -1,0 +1,1007 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2K.1beta (1.47)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Brainstorm</TITLE>
+<META NAME="description" CONTENT="Brainstorm">
+<META NAME="keywords" CONTENT="brainstorm">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="Generator" CONTENT="LaTeX2HTML v2K.1beta">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="brainstorm.css">
+
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<IMG WIDTH="81" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next_inactive"
+ SRC="file:/usr/share/latex2html/icons/nx_grp_g.png"> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up_g.png"> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev_g.png">   
+<BR>
+<BR><BR>
+<!--End of Navigation Panel-->
+
+<P>
+
+<P>
+
+<P>
+<H1 ALIGN="CENTER"><B>Brainstorm</B></H1>
+<P ALIGN="CENTER"><STRONG>ObliVion</STRONG></P>
+
+<P>
+
+<H3><A NAME="SECTION00000100000000000000">
+Trademarks</A>
+</H3>
+
+<P>
+Product names used in this publication are for identification purposes
+only and may be trademarks of their respective companies
+
+<P>
+<BR>
+
+<H2><A NAME="SECTION00010000000000000000">
+Contents</A>
+</H2>
+<!--Table of Contents-->
+
+<UL>
+<LI><A NAME="tex2html41"
+  HREF="brainstorm.html">1 aMOS</A>
+<UL>
+<LI><A NAME="tex2html42"
+  HREF="#SECTION00021000000000000000">1.1 The general design</A>
+</UL><BR>
+<LI><A NAME="tex2html43"
+  HREF="#SECTION00030000000000000000">2 <I>The BOSS</I>typeset@protect
+    @@footnote
+
+  SF@gobble@opt 
+  
+Basic Operating System Services
+ <I>kernel</I></A>
+<UL>
+<LI><A NAME="tex2html44"
+  HREF="#SECTION00031000000000000000">2.1 The design</A>
+<LI><A NAME="tex2html45"
+  HREF="#SECTION00032000000000000000">2.2 The BOSS kernel functionality</A>
+</UL><BR>
+<LI><A NAME="tex2html46"
+  HREF="#SECTION00040000000000000000">3 Modules</A>
+<UL>
+<LI><A NAME="tex2html47"
+  HREF="#SECTION00041000000000000000">3.1 Modules at system level</A>
+<LI><A NAME="tex2html48"
+  HREF="#SECTION00042000000000000000">3.2 The module manager</A>
+<LI><A NAME="tex2html49"
+  HREF="#SECTION00043000000000000000">3.3 Module file format</A>
+<LI><A NAME="tex2html50"
+  HREF="#SECTION00044000000000000000">3.4 aMOS Interface Definition files</A>
+</UL><BR>
+<LI><A NAME="tex2html51"
+  HREF="#SECTION00050000000000000000">4 Implementation example (I386)</A>
+<LI><A NAME="tex2html52"
+  HREF="#SECTION00060000000000000000">Bibliography</A>
+<LI><A NAME="tex2html53"
+  HREF="#SECTION00070000000000000000">About this document ...</A>
+</UL>
+<!--End of Table of Contents-->
+
+<P>
+
+<P>
+
+<H1><A NAME="SECTION00020000000000000000">
+1 aMOS</A>
+</H1>
+
+<P>
+The goal of aMOS is to be as versatile as possible, meaning that it
+should adjust itself to the users needs. This goal has a lot of disadvantages
+compared to a more task-oriented approach. One of them, that there
+is a lot of end-user decisions when installing the OS. There are some
+examples of very complex OSes on the marked, that hide a lot of details
+from the user behind a pretty GUI. The simple idea behind aMOS is
+that the user knows best, therefore nothing will be hidden unless
+the user specifies it. 
+
+<P>
+This means that aMOS will have to ''grade'' the user when installing
+itself, and ultimately learn what level the user is on, by watching
+the user in action. The goal of monitoring the user, and adapting
+to his needs, is as I see it a very complex task involving some kind
+of intelligence in aMOS. This intelligence could then extend to handling
+and recovering from crashes, and best of all see to it that they never
+happen again.
+
+<P>
+Another feature that helps recovering from a crash, that every object
+in aMOS is required to save the last functioning state, and figure
+out what went wrong between then and the crash, and then gracefully
+recover.
+
+<P>
+Both of these features may require a lot of processing power, for
+monitoring, and a lot of space for saving the safe states of the objects
+of aMOS.
+
+<P>
+
+<H2><A NAME="SECTION00021000000000000000">
+1.1 The general design</A>
+</H2>
+
+<P>
+The idea is to make aMOS as object oriented as possible, even though
+in this early stage everything is coded in ANSI C. The reason for
+choosing ANSI C is that the C library is easier to implement, and
+at this stage where no binary object format has been defined, and
+no compilers ported, there are some difficulties with RTTItypeset@protect
+    @@footnote
+
+  SF@gobble@opt 
+  
+Run-Time Type Information
+. <B>Just keep in mind that the code is destined to a complete
+rewrite in C++, and therefore keep things as object oriented as possible.</B>
+
+<P>
+There are some properties that every object in the system need to
+implement to be accepted as a liable system component:
+
+<P>
+
+<UL>
+<LI>At least one mailbox
+</LI>
+<LI>The ability to tell other objects about its capabilities through this
+mailbox
+</LI>
+<LI>Rules regarding what system components it may access
+</LI>
+<LI>Denial of unauthorized request
+</LI>
+</UL>
+
+<P>
+
+<H1><A NAME="SECTION00030000000000000000">
+2 <I>The BOSS</I>typeset@protect
+    @@footnote
+
+  SF@gobble@opt 
+  
+Basic Operating System Services
+ <I>kernel</I></A>
+</H1>
+
+<P>
+
+<H2><A NAME="SECTION00031000000000000000">
+2.1 The design</A>
+</H2>
+
+<P>
+The BOSS kernel is a system dependent micro kernel, that export a
+default functionality no matter the features of the underlying hardware.
+It is the lowest level of abstraction from the hardware of the target
+system, and the base of aMOS. The level of functionality that the
+BOSS kernel provides, is enough for running a usable shell thereby
+creating a very simple OS, but the intended use of the BOSS kernel,
+is as the base component in an operating system, that extend the services
+provided by the BOSS kernel.
+
+<P>
+The goal of the BOSS kernel is to export the features found on the
+target machine, without breaking the limits of the BOSS specifications,
+thereby creating the base for an architecture independent OS. This
+is accomplished by allowing the basic framework of the BOSS kernel
+to be extended by adding modules to the fundamental classes of services.
+These modules are registered as subcomponents of the service class.
+For instance on the Intel x86 platform the memory manager will have
+a subcomponent for managing virtual memory, since the processor support
+these extensions.
+
+<P>
+The BOSS kernel export all of its services through an IPCtypeset@protect
+    @@footnote
+
+  SF@gobble@opt 
+  
+Inter-Process Communication
+ system that uses mailboxes. By using the IPC system as the only means
+of requesting services from the BOSS kernel protection of the internals
+of BOSS are greatly simplified, due to the fact that the BOSS components
+has complete control when it comes to granting to access its services. 
+
+<P>
+
+<P></P>
+<DIV ALIGN="CENTER"><A NAME="fig:BOSSdes"></A><A NAME="190"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+The BOSS kernel design</CAPTION>
+<TR><TD><DIV ALIGN="CENTER"><!-- MATH
+ $\includegraphics{BOSS_design.eps}$
+ -->
+<IMG
+ WIDTH="374" HEIGHT="279" ALIGN="BOTTOM" BORDER="0"
+ SRC="img1.png"
+ ALT="\includegraphics{BOSS_design.eps}"> </DIV>
+<P>
+<DIV ALIGN="CENTER"></DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV><P></P>
+
+<P>
+Looking at figure <A HREF="brainstorm.html#fig:BOSSdes">1</A> you will see that the idea behind
+the BOSS kernel is the same as the HALtypeset@protect
+    @@footnote
+
+  SF@gobble@opt 
+  
+Hardware Abstraction Layer
+ in Windows NT, except for the fact that HAL told Dave, that his mind
+was going. Abstracting the hardware from the rest of the OS is a very
+good design decision, the problem with HAL, from my point of view,
+was that the drastic limitations on hardware access slowed certain
+task. I am thinking about the multimedia related features of the OS,
+but the point of Windows NT, I think, has never been to provide blazing
+speed for multimedia applications. The goal of Windows NT was to create
+a stable fault tolerant OS suitable for companies in need of a good
+OS with a nice user interface.
+
+<P>
+Relying on an IPC system 
+
+<P>
+
+<H3><A NAME="SECTION00031100000000000000">
+2.1.1 Hardware interface</A>
+</H3>
+
+<P>
+The BOSS has direct access to all parts of the hardware on the target
+machine, but may only utilize this hardware for the sake of providing
+the default functionality. The BOSS kernel provide the module mechanism
+to extend the basic functionality, and take advantage of special hardware
+capabilities<B>. The BOSS kernel should be designed to run on
+the target architecture with no modules loaded, so that the basic
+services may be provided, in case of system failure.</B> The BOSS may
+implement features that are beyond standard functionality if needed.
+For instance the Intel x86 version will have a virtual memory system
+as default because it makes loading of modules easier. These extended
+capabilities will still have the look of an extension module to the
+layers running on top of the BOSS kernel.
+
+<P>
+If there are no modules loaded, the BOSS kernel will use its own standard
+implementation to gain access to the hardware features of the system.
+Modules provide optimizations for the rest of the system, modules
+are loaded to provide better utilization of the features of for instance
+the CPU, of the system. 
+
+<P>
+<BR>
+<BR>
+
+
+<P></P>
+<DIV ALIGN="CENTER"><A NAME="44"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2:</STRONG>
+The BOSS kernel hardware interface</CAPTION>
+<TR><TD><DIV ALIGN="CENTER"><!-- MATH
+ $\includegraphics{BOSS_hi.eps}$
+ -->
+<IMG
+ WIDTH="677" HEIGHT="393" ALIGN="BOTTOM" BORDER="0"
+ SRC="img2.png"
+ ALT="\includegraphics{BOSS_hi.eps}"> </DIV>
+<P>
+<DIV ALIGN="CENTER"></DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV><P></P>
+
+<P>
+
+
+<P>
+
+<H3><A NAME="SECTION00031200000000000000">
+2.1.2 BOSS interface</A>
+</H3>
+
+<P>
+The BOSS kernel uses an Interprocess Communication (IPC) system to
+export a default functionality. Every service provided by the BOSS
+kernel has a mailbox, through which communication takes place. Basically
+this is what BOSS exports:
+
+<P>
+
+<UL>
+<LI>A <I>send</I> function for sending a message to a specific mailbox
+</LI>
+<LI>A <I>get_mb_desc</I> to acquire a handle for a mailbox
+</LI>
+</UL>
+
+<P>
+
+<H2><A NAME="SECTION00032000000000000000">
+2.2 The BOSS kernel functionality</A>
+</H2>
+
+<P>
+The BOSS kernel has a well defined default functionality. <B>It
+is required that the target system is able to provide a hardware base,
+that makes it possible for the BOSS kernel to export this default
+functionality</B>, either trough direct use of the hardware,
+or through emulation of the missing components on top of the hardware
+present. The default functionality consist of the following components:
+
+<P>
+
+<UL>
+<LI>A console
+</LI>
+<LI>Memory management
+</LI>
+<LI>Scheduling and multitasking
+</LI>
+<LI>Protection
+</LI>
+<LI>IPC
+</LI>
+<LI>Interrupt control
+</LI>
+<LI>Character device control
+</LI>
+<LI>Block device control
+</LI>
+</UL>
+Services from the BOSS kernel are called upon, by sending a query
+message to the mailbox of the service. This makes the IPC the heart
+of the BOSS kernel, and isolates the location of the BOSS kernel from
+the caller, enforcing some level of protection from malicious software.
+All of the exported services can have extension, provided by special
+mailboxes. The exact capabilities of these extensions can be investigated
+using the root service's mailbox.
+
+<P></P>
+<DIV ALIGN="CENTER"><A NAME="58"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3:</STRONG>
+Example of service extensions</CAPTION>
+<TR><TD><DIV ALIGN="CENTER"><!-- MATH
+ $\includegraphics{ext_examp.eps}$
+ -->
+<IMG
+ WIDTH="477" HEIGHT="380" ALIGN="BOTTOM" BORDER="0"
+ SRC="img3.png"
+ ALT="\includegraphics{ext_examp.eps}"> </DIV>
+<P>
+<DIV ALIGN="CENTER"></DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV><P></P>
+
+<P>
+
+<H3><A NAME="SECTION00032100000000000000">
+2.2.1 The console</A>
+</H3>
+
+<P>
+The console should be thought of as a special kind of the character
+devices mentioned later. It is the device that has been used to display
+status messages since the BOSS kernel was initialized. This device
+is guaranteed to stay put until the BOSS has shutdown its services.
+On a PC system this is usually some kind of video adapter, but this
+can be any kind of device, that is able to print characters; It could
+be a text file on disk. <B>The BOSS kernel implementation can
+choose to provide only a dummy driver for the console</B>, so
+that the messages to this output are send into oblivion.
+
+<P>
+
+<H3><A NAME="SECTION00032200000000000000">
+2.2.2 Memory management</A>
+</H3>
+
+<P>
+The BOSS kernel export the following functions for memory management:
+
+<P>
+
+<UL>
+<LI>Get total system memory
+</LI>
+<LI>Get map of allocated areas and their use
+</LI>
+<LI>Allocate a block of memory
+</LI>
+<LI>Deallocate a block of memory
+</LI>
+<LI>Rules for handling allocation of special memory blocks like DMA and
+such
+</LI>
+</UL>
+The memory management facilities of the BOSS kernel is for basic allocation
+only. It is designed to allocate large blocks of memory. and is not
+very fast, so lots of allocation/deallocation cycles is simply a waste
+of time. The idea is to extend this memory manager by allocating a
+block of memory, and letting a more specific memory allocator manage
+that specific block. This means thatSpecial blocks like DMA-buffer
+and the like, are handled by this allocator.
+
+<P>
+
+<P></P><DIV ALIGN="CENTER">
+<DIV ALIGN="CENTER"><!-- MATH
+ $\includegraphics{mm_aloc_example.eps}$
+ -->
+<IMG
+ WIDTH="708" HEIGHT="182" ALIGN="BOTTOM" BORDER="0"
+ SRC="img4.png"
+ ALT="\includegraphics{mm_aloc_example.eps}"> </DIV>
+<P>
+<DIV ALIGN="CENTER"></DIV>
+
+</DIV>
+<P></P>
+
+<P>
+
+<H3><A NAME="SECTION00032300000000000000">
+2.2.3 Scheduling and multitasking</A>
+</H3>
+
+<P>
+The BOSS kernel export the following functions for scheduling and
+multitasking:
+
+<P>
+
+<UL>
+<LI>Create / destroy a task
+</LI>
+<LI>Sleeping tasks
+</LI>
+<LI><B>Scheduling policy yet unknown</B>
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00032400000000000000">
+2.2.4 Protection</A>
+</H3>
+
+<P>
+
+<H3><A NAME="SECTION00032500000000000000">
+2.2.5 IPC</A>
+</H3>
+
+<P>
+
+<H1><A NAME="SECTION00040000000000000000">
+3 Modules</A>
+</H1>
+
+<P>
+A module is an entity in the system dedicated to a certain task, this
+may be a process scheduler, a disk driver, etc. The module format,
+specifies a subset of the aMOS object format specifically used from
+the BOSS kernel and up wards. 
+
+<P>
+
+<H2><A NAME="SECTION00041000000000000000">
+3.1 Modules at system level</A>
+</H2>
+
+<P>
+Any piece of code is split in to sections, when compiled and linked
+into an object file. These sections can be both code, data, uninitialized
+data, and other kinds of data that the linker needs. The module manager
+must load these sections into system memory and then execute the initialization
+routine from the module. The binary layout of modules are described
+in <A HREF="brainstorm.html#Module_file_format">3.3</A>
+
+<P>
+
+<H3><A NAME="SECTION00041100000000000000">
+3.1.1 Relocation</A>
+</H3>
+
+<P>
+When the modules are compiled and linked into an object file, the
+linker has no idea at what address the final code is to be loaded.
+The job of placing the code in memory is that of the module manager.
+Therefore every reference to a memory address in the module needs
+to be recalculated, and the right addresses merged in to the image
+in memory.
+
+<P>
+
+<H2><A NAME="SECTION00042000000000000000">
+3.2 The module manager</A>
+</H2>
+
+<P>
+The module manager provides the following functions:
+
+<P>
+
+<UL>
+<LI>Loading and parsing of modules
+</LI>
+<LI>Creating new interfaces
+</LI>
+<LI>Copying the sections of modules to the right memory location
+</LI>
+<LI>Dependency checking and loading of needed modules
+</LI>
+<LI>Initializing modules
+</LI>
+<LI>Destroying interfaces
+</LI>
+<LI>Unloading modules
+</LI>
+</UL>
+
+<P>
+
+<H3><A NAME="SECTION00042100000000000000">
+3.2.1 Loading modules</A>
+</H3>
+
+<P>
+This stage actually parses the information in the module file, rather
+than just loading it. The module manager first needs to find out what
+sections are present, and allocate memory for them. Then 
+
+<P>
+<BR>
+<BR>
+
+
+<P></P>
+<DIV ALIGN="CENTER"><A NAME="86"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 4:</STRONG>
+Structure of a module</CAPTION>
+<TR><TD><DIV ALIGN="CENTER"><!-- MATH
+ $\includegraphics{module_basic.eps}$
+ -->
+<IMG
+ WIDTH="137" HEIGHT="273" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="\includegraphics{module_basic.eps}"> </DIV>
+<P>
+<DIV ALIGN="CENTER"></DIV>
+
+<P></TD></TR>
+</TABLE>
+</DIV><P></P>
+
+<P>
+
+<BR>
+<BR>
+
+<P>
+
+<H2><A NAME="SECTION00043000000000000000"></A><A NAME="Module_file_format"></A><BR>
+3.3 Module file format
+</H2>
+
+<P>
+
+<H3><A NAME="SECTION00043100000000000000">
+3.3.1 The module header</A>
+</H3>
+
+<P>
+The module header contain initial information needed by the BOSS kernel
+to load and initialize its services.
+
+<P>
+
+<UL>
+<LI><I>magic number</I> is a special number starting at the very first
+byte in the file, telling that this really is a module
+</LI>
+<LI><I>version</I> the version of the aMOS module format. 
+</LI>
+<LI><I>header size</I> is the size of the header data structure at the
+start of the module
+</LI>
+<LI><I>validation ID</I> is and MD5[<A
+ HREF="brainstorm.html#MD5">MD5</A>] key generated from the
+code sections in the file, and is used to check if the module has
+been tampered with.
+</LI>
+<LI><I>architecture</I> tells on what architecture the module is use able.
+</LI>
+<LI><I>32/64 bit module</I> is used to tell whether this module is for
+32 or 64 bit architectures
+</LI>
+<LI><I>section table offset</I> the offset, from the beginning of the
+file, where the section table is located
+</LI>
+<LI><I>section table entries</I> the number of sections there are in the
+section table
+</LI>
+<LI><I>section table entry size</I> the size, in bytes, of one entry in
+the section table
+</LI>
+</UL>
+The structure looks like this in C:
+
+<P>
+<TT>&nbsp;</TT>
+
+<P>
+<TT>struct module_header</TT>
+
+<P>
+<TT>{</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;char&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mh_magic[10];</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned short&nbsp;&nbsp;mh_version[4];</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned long&nbsp;&nbsp;&nbsp;mh_size;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned long&nbsp;&nbsp;&nbsp;mh_id[2];</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned long&nbsp;&nbsp;&nbsp;mh_st_offset;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unsigned long&nbsp;&nbsp;&nbsp;mh_st_entries;</TT>
+
+<P>
+<TT>}</TT>
+
+<P>
+
+<H4><A NAME="SECTION00043110000000000000">
+3.3.1.1 mh_magic</A>
+</H4>
+
+<P>
+The magic number is found at position 0 and it is used to identify
+the file as a valid aMOS module. The magic number consist of the string
+''<TT>aMOSmodule</TT>'' in 8-bit ASCII format which gives this
+byte sequence:
+
+<P>
+
+<P><P><BR>
+
+<TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">ASCII</TD>
+<TD ALIGN="CENTER">a</TD>
+<TD ALIGN="CENTER">M</TD>
+<TD ALIGN="CENTER">O</TD>
+<TD ALIGN="CENTER">S</TD>
+<TD ALIGN="CENTER">m</TD>
+<TD ALIGN="CENTER">o</TD>
+<TD ALIGN="CENTER">d</TD>
+<TD ALIGN="CENTER">u</TD>
+<TD ALIGN="CENTER">l</TD>
+<TD ALIGN="CENTER">e</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Hex</TD>
+<TD ALIGN="CENTER">0x61</TD>
+<TD ALIGN="CENTER">0x4d</TD>
+<TD ALIGN="CENTER">0x4f</TD>
+<TD ALIGN="CENTER">0x53</TD>
+<TD ALIGN="CENTER">0x6d</TD>
+<TD ALIGN="CENTER">0x6f</TD>
+<TD ALIGN="CENTER">0x64</TD>
+<TD ALIGN="CENTER">0x75</TD>
+<TD ALIGN="CENTER">0x6c</TD>
+<TD ALIGN="CENTER">0x65</TD>
+</TR>
+</TABLE>
+
+<P><P><BR>
+
+
+<P>
+These values are defined and has the following names:
+
+<P><P><BR>
+
+
+<P>
+<TT>AMOD_MH_MAGIC0&nbsp;&nbsp;&nbsp;&nbsp;0x61</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC1&nbsp;&nbsp;&nbsp;&nbsp;0x4d</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC2&nbsp;&nbsp;&nbsp;&nbsp;0x4f</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC3&nbsp;&nbsp;&nbsp;&nbsp;0x53</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC4&nbsp;&nbsp;&nbsp;&nbsp;0x6d</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC5&nbsp;&nbsp;&nbsp;&nbsp;0x6f</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC6&nbsp;&nbsp;&nbsp;&nbsp;0x64</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC7&nbsp;&nbsp;&nbsp;&nbsp;0x75</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC8&nbsp;&nbsp;&nbsp;&nbsp;0x6c</TT>
+
+<P>
+<TT>AMOD_MH_MAGIC9&nbsp;&nbsp;&nbsp;&nbsp;0x65</TT>
+
+<P>
+
+<H4><A NAME="SECTION00043120000000000000">
+3.3.1.2 mh_version</A>
+</H4>
+
+<P>
+The module format version number is stored as four words, each separated
+by a punctuation-mark. E.g. if the array has these values <TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">1</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">2</TD>
+</TR>
+</TABLE>, the version is 0.1.0.2.
+
+<P>
+
+<H4><A NAME="SECTION00043130000000000000">
+3.3.1.3 mh_size</A>
+</H4>
+
+<P>
+This entry simply tells the size of the header. This is used in accordance
+with mh_version to provide backward compatibility.
+
+<P>
+
+<H4><A NAME="SECTION00043140000000000000">
+3.3.1.4 mh_id</A>
+</H4>
+
+<P>
+This is a 64 bit key generated by applying the MD5[<A
+ HREF="brainstorm.html#MD5">MD5</A>] algorithm
+to all the code sections in the module file. The code sections are
+processed in the the same order as they are mentioned in the section
+table. This value is used to check if the code of the module is still
+intact.
+
+<P>
+
+<H4><A NAME="SECTION00043150000000000000">
+3.3.1.5 mh_arch</A>
+</H4>
+
+<P>
+This is a ID telling for which system (machine type) the module was
+compiled.
+
+<P>
+
+<H4><A NAME="SECTION00043160000000000000">
+3.3.1.6 mh_bit</A>
+</H4>
+
+<P>
+This is a byte value of either 32 or 64 telling if the module is targeted
+at a 32 or 64 bit architectures.
+
+<P>
+
+<H4><A NAME="SECTION00043170000000000000">
+3.3.1.7 mh_st_offset</A>
+</H4>
+
+<P>
+The byte offset from the start of the file, where the section table
+is to be found. The section table is described in detail in <A HREF="brainstorm.html#Section_table">3.3.2</A>.
+
+<P>
+
+<H4><A NAME="SECTION00043180000000000000">
+3.3.1.8 mh_st_entries</A>
+</H4>
+
+<P>
+The number of sections in the section table.
+
+<P>
+
+<H4><A NAME="SECTION00043190000000000000">
+3.3.1.9 mh_st_entsize</A>
+</H4>
+
+<P>
+The size, in bytes, of a single entry in the section table.
+
+<P>
+
+<H3><A NAME="SECTION00043200000000000000"></A><A NAME="Section_table"></A><BR>
+3.3.2 Section table
+</H3>
+
+<P>
+The section table has one entry per section in the file. A section
+is a block containing raw binary data from the object file. There
+may be sections in the module, that are both software and hardware
+specific. The section can be identified using the section header located
+at position 0 in the section, more on the format of section headers
+in <A HREF="brainstorm.html#Section_header">3.3.3</A>. The position of the section is found in
+the section table.
+
+<P>
+
+<H3><A NAME="SECTION00043300000000000000"></A><A NAME="Section_header"></A><BR>
+3.3.3 Section header
+</H3>
+
+<P>
+
+<H2><A NAME="SECTION00044000000000000000">
+3.4 aMOS Interface Definition files</A>
+</H2>
+
+<P>
+<TT>&lt;interface&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name=&#34;intr&#34;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;manager=&#34;BOSS&#34;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mailbox=&#34;/dev/intr&#34;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;description=&#34;Low level interrupt
+control&#34;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;provides&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BOSS.interrupt.low_level</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/provides&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;depends&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BOSS.ipc</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;BOSS.mm</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/depends&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;exports&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n_intr&nbsp;&nbsp;#
+Number of interrupts</TT>
+
+<P>
+<TT>&nbsp;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;init(void)</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;func&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;int_shutdown(void)</TT>
+
+<P>
+<TT>&nbsp;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSG_INT_&lt;unsigned
+long&gt;</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;msg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MSG_HOOK_INT</TT>
+
+<P>
+<TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/exports&gt;</TT>
+
+<P>
+<TT>&lt;/interface&gt;</TT>
+
+<P>
+
+<H1><A NAME="SECTION00050000000000000000">
+4 Implementation example (I386)</A>
+</H1>
+
+<P>
+ 
+<H2><A NAME="SECTION00060000000000000000">
+Bibliography</A>
+</H2><DL COMPACT><DD><P></P><DT><A NAME="MD5">MD5</A>
+<DD>Request for Comments 1231</DL>
+
+<P>
+
+<H1><A NAME="SECTION00070000000000000000">
+About this document ...</A>
+</H1>
+ <STRONG><B>Brainstorm</B></STRONG><P>
+This document was generated using the
+<A HREF="http://www-dsed.llnl.gov/files/programs/unix/latex2html/manual/"><STRONG>LaTeX</STRONG>2<tt>HTML</tt></A> translator Version 2K.1beta (1.47)
+<P>
+Copyright &#169; 1993, 1994, 1995, 1996,
+<A HREF="http://cbl.leeds.ac.uk/nikos/personal.html">Nikos Drakos</A>, 
+Computer Based Learning Unit, University of Leeds.
+<BR>Copyright &#169; 1997, 1998, 1999,
+<A HREF="http://www.maths.mq.edu.au/~ross/">Ross Moore</A>, 
+Mathematics Department, Macquarie University, Sydney.
+<P>
+The command line arguments were: <BR>
+ <STRONG>latex2html</STRONG> <TT>-no_subdir -split 0 -show_section_numbers /tmp/lyx_tmpdir22392LqFB8l/lyx_tmpbuf22392I2nMVa/brainstorm.tex</TT>
+<P>
+The translation was initiated by Martin Bo Kristensen Grønholdt on 2002-01-23<HR>
+<!--Navigation Panel-->
+<IMG WIDTH="81" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next_inactive"
+ SRC="file:/usr/share/latex2html/icons/nx_grp_g.png"> 
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up_g.png"> 
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev_g.png">   
+<BR>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Martin Bo Kristensen Grønholdt
+2002-01-23
+</ADDRESS>
+</BODY>
+</HTML>

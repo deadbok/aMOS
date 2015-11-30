@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+  <title>The aMOS i386 boot sector</title>
+  <link href="styles.css" rel="stylesheet"
+type="text/css"></head>
+<body bgcolor="white" link="blue" alink="red" vlink="darkBlue">
+<p><h1 align="center">The aMOS i386 boot sector</h1></p>
+<p>This document will step through the kernel at i386 code level. Describing the general tasks
+needed to load the aMOS micro kernel, is not the goal of this document.</p>
+<hr>
+<pre>
+    text
+    version "0.02.00"
+    code16
+
+    =0
+
+</pre>
+<p>This just standard AT&T asm setup. The "text" segment (wich is were the code is placed),
+ contains 16-bit code, and starts at 0x0:0x0</p>
+<hr align="center" width="40%">
+<pre>
+    #define ASM_FILE
+    #define ABS(x) (x-entry+0x7c00)
+
+</pre>
+<p>The definition of ASM_FILE is used to tell as that it should not parse the C part of the include
+files. ABS is used to give absolute address of pointer. Since as has been told that the code
+ start at 0x0:0x0 this is necesary. The real address of the boot sector is 0x0:0x7c00</P>
+<hr align="center" width="40%">
+<a name="entry"></a>
+<pre>
+		globl	entry
+	entry		cld
+				jmp		start
+
+</pre>
+<p>Entry is where the BIOS jumps, when it has run trough the POST.The first thing to do is
+skip over the data area at the top of the boot sector.</p>
+<hr align="center" width="40%"><pre>
+    boot_setup:
+    boot_drive:		byte		0
+    bytes_per_sector:	word	0
+    boot_sectors:		byte		0
+    loader_start:		long		0
+    loader_sectors:		long		0
+    kernel_start:		long		0
+    kernel_sectors:		long		0
+    setup_size:		byte		20
+
+</pre>
+In C:
+<pre>
+    struct boot_setup
+    {
+        unsigned char           boot_drive;
+        unsigned short          bytes_per_sector;
+        nsigned char            boot_sectors;
+        unsigned long           loader_start;
+        unsigned long           loader_sectors;
+        unsigned long           kernel_start;
+        unsigned long           kernel_sectors;
+    }
+
+</pre>
+<p>This data structure holds vital data for the boot process. The boot sector uses this to figure
+ out from where the kernel is read. This structure is passed on to the loader.
+</p>
+<hr align="center" width="40%">
+<pre>
+    #include &lt boot/boot.h&gt
+
+</pre>
+<p>Include boot.h which contains common boot parameters used by the boot sector, loader, and kernel.
+</p>
+<hr align="center" width="40%">
+<pre>
+    start:      cli
+
+                xorw    %ax, %ax
+                movw    %ax, %ds
+                movw    %ax, %ss
+                movw    $RM_STACK, %sp
+
+</pre>
+<p>This initializes the data and stack segment to 0x0. It then set the address of the real mode
+ stack to the value of RM_STACK (from boot.h)</p>
+<hr align="center" width="40%">
+<pre>
+                movb    %dl, ABS(boot_drive)
+
+</pre>
+<p>The BIOS puts the device number we booted from in dl, save this for later use.</p>
+<hr align="center" width="40%">
+<pre>
+                movw    $ABS(msg_booting), %si
+                call    print
+
+</pre>
+<p>Tell the user that we are booting by printing a nice message.</p>
+<hr align="center" width="40%">
+<pre>
+                movb	ABS(boot_drive), %dl
+                xorw	%ax, %ax
+                int     $0x13
+
+</pre>
+<p>Use BIOS interrupt 0x13 function 0x0 to reset the device we booted from</p>
+<hr align="center" width="40%">
+<pre>
+                movw    $0x08, %ax
+                int     $0x13
+
+</pre>
+<p>Get drive parameters using interrupt 0x13 function 0x8. Ralf Brown's Interrupt list tells the
+following about this interrupt:</p>
+<h3>INT 13 - DISK - GET DRIVE PARAMETERS (PC,XT286,CONV,PS,ESDI,SCSI)</h3>
+</p>
+<table border="1">
+  <tr>
+    <td>Input</td>
+    <td>AH: 08h  </td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>DL: drive (bit 7 set for hard disk)</td>
+  </tr>
+  <tr>
+    <td>Output</td>
+    <td>CF: set on error</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>AH: staus</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>AL: 00h at least on some BIOSes</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>BL: drive type (AT/PS2 floppies only)</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>CH: low eight bits of maximum cylinder number  </td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>CL: maximum sector number (bits 5-0). High two bits of maximum cylinder number (bits 7-6)</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>DH: maximum head number</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>DL: number of drives</td>
+  </tr>
+  <tr>
+    <td>  </td>
+    <td>ES:DI: drive parameter table (floppies only)</td>
+  </tr>
+</table></p>
+<hr align="center" width="40%">
+<h4>The next few blocks of code calculate the position of the loader on the boot drive, using
+ information from both from boot_setup and the interrupt that was jast called. It's use of the
+ registers are amied towards calling <a href="#readsector">readsector</a> which expect to be
+ given a position in sectotrs. Therefore we have to convert from cylinder/head/sector (CHS) to
+ absolute sectors</h4>
+<pre>
+                incb    %dh
+                movb    %dh, ABS(heads)+1
+
+</pre>
+<p>
+Copy the number of heads to a convinient place
+</p>
+<pre>
+                movb    %cl, %al
+                andb    $0x3f, %al
+                movb    %al, ABS(sectors)+1
+
+</pre>
+<p>Isolate maximum sector number and store the value.</p>
+<pre>
+                xorw    %ax, %ax
+                movb    %cl, %al
+                shlw    $2, %ax
+
+</pre>
+<p>Isoate the two high bits of CL (maximum cylinder number) and shift it in to AH</p>
+<pre>
+                movb    %ch, %al
+
+                incw    %ax
+                movw    %ax, ABS(cylinders)
+
+</pre>
+<p>Move the remaining 8 bits from CH to AL, and store the value.</p>
+<hr align="center" width="40%">
+<pre>
+                movw    ABS(loader_sectors), %cx
+
+</pre>
+<p>Move the loader size (in sectors) in to CX</p>
+<pre>
+                xorw	%dx, %dx
+                movw	ABS(loader_start), %ax
+
+</pre>
+<p>Clear DX and move the start sector of the loader into AX.</p>
+<pre>
+		movw	%dx, %es
+		movw	$LOADER_OFF, %bx
+
+</pre>
+<p>Clear ES and move the destination address into BX.<br>
+The registers are now used as follows:<br></p>
+<table border="1">
+<tr><td>CX</td><td>Number of sectors to load</td></tr>
+<tr><td>DX:AX</td><td>Absolute address of the first sector to load</td></tr>
+<tr><td>EX:BX</td><td>Address of the destination buffer</td></tr>
+</table>
+<p>Wich is what <a href="#readsector">readsector</a> expect.</p>
+<hr align="center" width="40%">
+<pre>
+1:		call	readsector
+</pre>
+<p>Read a sector into the buffer</p>
+<hr align="center" width="40%">
+<h4>Keep adjusting the parameters, to read the next sector, call 
+<a href="#readsector">readsector</a> again, and see if all sectors are loaded.</h4>
+<pre>
+		addw	ABS(bytes_per_sector), %bx
+
+</pre>
+<p>Add the number of bytes loaded to the address of the memory buffer</p>
+<pre>
+		addw    $1, %ax
+		adcw    $0, %dx
+
+</pre>
+<p>Adjust sector address to the next sector</p>
+<pre>
+		movw	$ABS(msg_read), %si
+		call	print
+
+</pre>
+<p>Tell the user that we are still alive</p>
+</pre>
+
+		decw    %cx
+		jnz     1b
+
+</pre>
+<p>Decrease the number of sector to read and go once more, unless 0</p>
+<hr align="center" width="40%">
+<pre>
+2:		movw	$ABS(msg_OK), %si
+		call    print
+
+</pre>
+<p>Tell the user that everything went okay</p>
+<hr align="center" width="40%">
+<pre>
+		movw	0x03f2, %dx
+		xorb	%al, %al
+		outb	%al, %dx
+
+</pre>
+<p>Stop floppy motor</p>
+<hr align="center" width="40%">
+<pre>
+		movb	ABS(boot_drive), %dl
+		xorw	%cx, %cx
+		movb	ABS(setup_size), %cl
+		movw	$ABS(boot_setup), %si
+
+</pre>
+<p>Set up the registers in the following way before calling the loader:<br></p>
+<table border="1">
+<tr><td>DL</td><td>BIOS number of the boot device</td></tr>
+<tr><td>CX</td><td>Size of the boot_setup struct</td></tr>
+<tr><td>SI</td><td>Pointer to boot_setup</td></tr>
+</table>
+<hr align="center" width="40%">
+<pre>
+		movl	$LOADER_OFF, %eax
+
+		jmpl	*%eax
+
+</pre>
+<p>Jump to the loader</p>
+<hr align="center" width="40%">
+<pre>
+read_fail:	movw	$ABS(msg_read_fail), %si
+		call	print
+</pre>
+<p>Print a message if disk read fails</p>
+<hr align="center" width="40%">
+<pre>
+fail:		mov		$ABS(msg_boot_fail), %si
+		call	print
+
+hang:		jmp		hang
+
+</pre>
+<p>If something fails simply print an error message and hang the computer</p>
+<pre>
+msg_booting:		.asciz	"Loading"
+msg_error:			.asciz	"Error\n\r"
+msg_read:			.asciz	"."
+msg_OK:				.asciz	"OK\n\r"
+msg_read_fail:		.asciz	"Error reading disk\n\r"
+msg_boot_fail:		.asciz	"Please reboot!\n\r"
+</pre>
+<p>String definitions for the various messages that the bootsector may output to screen</p>
+<pre>
+heads:				.word	0
+cylinders:			.word	0
+sectors:			.word	0
+</pre>
+<p>Variables for storing disk geometry data</p>
+<pre>
+/*-----------------------------------------------------------------------------
+ *       print:          print zstring as TTY
+ *
+ *       Call with:      SI = address of the first char
+ *-----------------------------------------------------------------------------
+ */
+print:					pusha
+
+	/* print string as TTY */
+
+						movb	$0x0e, %ah
+						xorw	%bx, %bx
+
+1:						lodsb
+						cmpb	$0, %al
+						je      2f
+						int     $0x10
+						jmp     1b
+
+2:						popa
+						ret
+
+/*-----------------------------------------------------------------------------
+ *		readsector:		Read one sector to ES:BX
+ *
+ *		Call with:		DX:AX = address of the start sector
+ *						ES:BX = destination buffer
+ *
+ *-----------------------------------------------------------------------------
+ */
+</pre>
+<a name="readsector"></a>
+<pre>
+readsector:				pusha
+						push	%dx
+						push	%ax
+														/* chs_geometry->sector=sector%(disk_geometry.sector)+1;
+														 * chs_geometry->head=sector/disk_geometry.sector;
+														 * chs_geometry->cylinder=chs_geometry->head/disk_geometry.head;
+														 * chs_geometry->head%=disk_geometry.head;
+														 */
+
+						movw 	ABS(sectors), %si
+						divw	%si /*ABS(sectors)*/	/* sector=sector mod sectors */
+						movw	%dx, %cx				/* cx = sector */
+						incw	%cx					 	/* ax = temp */
+
+						xorw	%dx, %dx
+						movw 	ABS(heads), %si
+						divw	%si				/* cylinder= head div heads */
+														/* ax = cylinder */
+														/* head = temp mod heads */
+														/* dx = head */
+						movb	%dl, %dh           		/* ax = cylinder & dl = head */
+
+						rorb	$2, %ah
+						xchg	%al, %ah           		/* al = [7-6] high cylinder & [5-0] sector */
+														/* ah = cylinder */
+						orw     %ax, %cx
+
+						movb	ABS(boot_drive), %dl
+
+						movw	$0x0201, %ax
+						int   	$0x13
+
+	/* INT 13 - DISK - READ SECTOR(S) INTO MEMORY
+	 *
+	 *	Input:
+	 * 		AH		02h
+	 *		AL		number of sectors to read (must be nonzero)
+	 *		CH		low eight bits of cylinder number
+	 *		CL		sector number 1-63 (bits 0-5)
+	 *				high two bits of cylinder (bits 6-7, hard disk only)
+	 *		DH		head number
+	 *		DL		drive number (bit 7 set for hard disk)
+	 *		ES:BX	data buffer
+	 *	Output:
+	 * 		CF 		set on error
+	 * 	  			if AH = 11h (corrected ECC error), AL = burst length
+	 *
+	 *		CF		clear if successful
+	 *		AH		status
+	 *		AL		number of sectors transferred (only valid if CF set for some
+	 *				BIOSes)
+	 *
+	 *	Copied from Ralf Brown's Interrupt List
+	 */
+
+					jnc		1f
+
+					movw	$ABS(msg_error), %si
+					call	print
+
+					xorw	%ax, %ax			/* error: reset disk and re-read */
+					int     $0x13				/* may lead to a continuos loop */
+					pop     %ax
+					pop     %dx
+					jmp     readsector
+
+1:					pop     %ax
+					pop     %dx
+					popa
+
+2:					ret
+
+					.= 510
+		  			.byte	0x55
+			  		.byte	0xAA
+
+/*						mov		dh, [ABS(boot_drive)]	; dh = drive
+						xchg	dh, dl					; dl = drive, dh = head
+
+						mov		cx, di
+						mov		ch, ah
+						shl		cx, 6					; ah = high two bits of cylinder
+						mov		cl, bl
+						xchg	cl, ch					; ch = low eight bits of cylinder number
+														; cl = sector number 1-63 (bits 0-5)
+														;		high two bits of cylinder
+*/
+</pre>
+
+</body>
+</html>

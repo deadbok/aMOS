@@ -1,0 +1,24 @@
+<!DOCTYPE kate_project ><kate_project version="1" name="project_name_here" >
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/pic.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/cpu.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/debug.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/dt.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/entry.S" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/gdt.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/halt.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/idt.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/int.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/inthandl.GS" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/list.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/mailbox.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/main.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/mm.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/module.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/pit.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/schedule.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/setup.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/ports.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/task.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/tss.c" />
+ <file path="/home/Oblivion/aMOS/src/hik/kernel/video.c" />
+</kate_project>
